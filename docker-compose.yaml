@@ -1,0 +1,54 @@
+
+version: "3.2"
+
+services:
+  
+  wordpress:
+
+    image: wordpress:latest
+    deploy:
+      replicas: 3
+    restart: always
+    ports:
+      - 81:80
+    volumes:
+      - wordpress-data:/var/www/public_html
+    depends_on: 
+      - mysql
+    env_file:
+      - wordpress.config
+    links:
+      - mysql
+
+  mysql:
+
+    image: mysql:latest
+    deploy:
+      replicas: 3
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    env_file:
+      - db.config
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - 8888:8080
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - webserver
+
+volumes:
+
+  wordpress-data:
+  mysql-data:
+
+networks:
+
+  webserver:
